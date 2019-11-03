@@ -105,7 +105,7 @@ This command set credentials to environment variables.
 func init() {
 	rootCmd.AddCommand(loginCmd)
 
-	loginCmd.Flags().StringP("arn-mfa", "a", "myRoleArn", "An arn of the MFA device")
+	loginCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
 	loginCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	loginCmd.Flags().StringP("session-profile", "s", "", "A name of profile to set credentials")
 }
