@@ -22,12 +22,12 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"golang.org/x/xerrors"
 	"gopkg.in/ini.v1"
 	"path/filepath"
 )
@@ -43,27 +43,27 @@ This command set credentials to credentials file.
 	RunE: func(cmd *cobra.Command, args []string) error {
 		prof, err := cmd.Flags().GetString("profile")
 		if err != nil {
-			return fmt.Errorf("Failed to parse flag '%s': %+v", prof, err)
+			return xerrors.Errorf("Failed to parse flag '%s': %w", prof, err)
 		}
 
 		newp, err := cmd.Flags().GetString("session-profile")
 		if err != nil {
-			return fmt.Errorf("Failed to parse flag '%s': %+v", prof, err)
+			return xerrors.Errorf("Failed to parse flag '%s': %w", prof, err)
 		}
 
 		sess, err := session.NewSessionWithOptions(session.Options{Profile: prof})
 		if err != nil {
-			return fmt.Errorf("Failed to start new session: %+v", err)
+			return xerrors.Errorf("Failed to start new session: %w", err)
 		}
 
 		arn, err := cmd.Flags().GetString("arn-mfa")
 		if err != nil {
-			return fmt.Errorf("Failed to parse flag: %+v", arn, err)
+			return xerrors.Errorf("Failed to parse flag: %w", arn, err)
 		}
 
 		code, err := stscreds.StdinTokenProvider()
 		if err != nil {
-			return fmt.Errorf("Failed to get token code: %+v", err)
+			return xerrors.Errorf("Failed to get token code: %w", err)
 		}
 
 		svc := sts.New(sess)
@@ -74,28 +74,28 @@ This command set credentials to credentials file.
 
 		result, err := svc.GetSessionToken(input)
 		if err != nil {
-			return fmt.Errorf("Failed to get session token: %+v", err)
+			return xerrors.Errorf("Failed to get session token: %w", err)
 		}
 
 		home, err := homedir.Dir()
 		if err != nil {
-			return fmt.Errorf("Failed to get home directory: %+v", err)
+			return xerrors.Errorf("Failed to get home directory: %w", err)
 		}
 		src := filepath.Join(home, ".aws/credentials")
 		cfg, err := ini.Load(src)
 		if err != nil {
-			return fmt.Errorf("Failed to get credentials file: %+v", err)
+			return xerrors.Errorf("Failed to get credentials file: %w", err)
 		}
 		sec, err := cfg.NewSection(newp)
 		if err != nil {
-			return fmt.Errorf("Failed to create new section: %+v", err)
+			return xerrors.Errorf("Failed to create new section: %w", err)
 		}
 		sec.Key("aws_access_key_id").SetValue(*result.Credentials.AccessKeyId)
 		sec.Key("aws_secret_access_key").SetValue(*result.Credentials.SecretAccessKey)
 		sec.Key("aws_session_token").SetValue(*result.Credentials.SessionToken)
 
 		if err := cfg.SaveTo(src); err != nil {
-			return fmt.Errorf("Failed to save credentials file: %+v", err)
+			return xerrors.Errorf("Failed to save credentials file: %w", err)
 		}
 
 		return nil
