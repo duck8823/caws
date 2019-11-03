@@ -26,8 +26,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"os"
+	"gopkg.in/ini.v1"
+	"path/filepath"
 )
 
 // loginCmd represents the login command
@@ -41,7 +43,12 @@ This command set credentials to environment variables.
 	RunE: func(cmd *cobra.Command, args []string) error {
 		prof, err := cmd.Flags().GetString("profile")
 		if err != nil {
-			return fmt.Errorf("Failed to parse profile '%s': %+v", prof, err)
+			return fmt.Errorf("Failed to parse flag '%s': %+v", prof, err)
+		}
+
+		newp, err := cmd.Flags().GetString("session-profile")
+		if err != nil {
+			return fmt.Errorf("Failed to parse flag '%s': %+v", prof, err)
 		}
 
 		sess, err := session.NewSessionWithOptions(session.Options{Profile: prof})
@@ -51,7 +58,7 @@ This command set credentials to environment variables.
 
 		arn, err := cmd.Flags().GetString("arn-mfa")
 		if err != nil {
-			return fmt.Errorf("Failed to parse arn: %+v", arn, err)
+			return fmt.Errorf("Failed to parse flag: %+v", arn, err)
 		}
 
 		code, err := stscreds.StdinTokenProvider()
@@ -70,14 +77,25 @@ This command set credentials to environment variables.
 			return fmt.Errorf("Failed to get session token: %+v", err)
 		}
 
-		if err := os.Setenv("AWS_ACCESS_KEY_ID", *result.Credentials.AccessKeyId); err != nil {
-			return fmt.Errorf("Failed to set environment variable: %+v", err)
+		home, err := homedir.Dir()
+		if err != nil {
+			return fmt.Errorf("Failed to get home directory: %+v", err)
 		}
-		if err := os.Setenv("AWS_SECRET_ACCESS_KEY", *result.Credentials.SecretAccessKey); err != nil {
-			return fmt.Errorf("Failed to set environment variable: %+v", err)
+		src := filepath.Join(home, ".aws/credentials")
+		cfg, err := ini.Load(src)
+		if err != nil {
+			return fmt.Errorf("Failed to get credentials file: %+v", err)
 		}
-		if err := os.Setenv("AWS_SESSION_TOKEN", *result.Credentials.SessionToken); err != nil {
-			return fmt.Errorf("Failed to set environment variable: %+v", err)
+		sec, err := cfg.NewSection(newp)
+		if err != nil {
+			return fmt.Errorf("Failed to create new section: %+v", err)
+		}
+		sec.Key("aws_access_key_id").SetValue(*result.Credentials.AccessKeyId)
+		sec.Key("aws_secret_access_key").SetValue(*result.Credentials.SecretAccessKey)
+		sec.Key("aws_session_token").SetValue(*result.Credentials.SessionToken)
+
+		if err := cfg.SaveTo(src); err != nil {
+			return fmt.Errorf("Failed to save credentials file: %+v", err)
 		}
 
 		return nil
@@ -87,6 +105,7 @@ This command set credentials to environment variables.
 func init() {
 	rootCmd.AddCommand(loginCmd)
 
-	loginCmd.Flags().StringP("arn-mfa", "m", "myRoleArn", "An arn of the MFA device")
+	loginCmd.Flags().StringP("arn-mfa", "a", "myRoleArn", "An arn of the MFA device")
 	loginCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
+	loginCmd.Flags().StringP("session-profile", "s", "", "A name of profile to set credentials")
 }
