@@ -56,7 +56,7 @@ This command set credentials to credentials file.
 			return xerrors.Errorf("Failed to start new session: %w", err)
 		}
 
-		arn, err := cmd.Flags().GetString("arn-mfa")
+		arn, err := cmd.Flags().GetString("serial-number")
 		if err != nil {
 			return xerrors.Errorf("Failed to parse flag: %w", arn, err)
 		}
