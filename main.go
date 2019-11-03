@@ -21,8 +21,8 @@ THE SOFTWARE.
 */
 package main
 
-import "cmd/cmd"
+import "github.com/duck8823/caws/cmd"
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }
