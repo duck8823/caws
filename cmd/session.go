@@ -32,13 +32,13 @@ import (
 	"path/filepath"
 )
 
-// loginCmd represents the login command
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "login AWS with STS",
-	Long: `login AWS with AWS Security Token Service (STS)
+// sessionCmd represents the login command
+var sessionCmd = &cobra.Command{
+	Use:   "session",
+	Short: "Get and set session token with STS",
+	Long: `Get and set session token AWS with AWS Security Token Service (STS).
 
-This command set credentials to environment variables.
+This command set credentials to credentials file.
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		prof, err := cmd.Flags().GetString("profile")
@@ -103,9 +103,9 @@ This command set credentials to environment variables.
 }
 
 func init() {
-	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(sessionCmd)
 
-	loginCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
-	loginCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
-	loginCmd.Flags().StringP("session-profile", "s", "", "A name of profile to set credentials")
+	sessionCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
+	sessionCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
+	sessionCmd.Flags().StringP("session-profile", "s", "", "A name of profile to set credentials")
 }
