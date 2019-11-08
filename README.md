@@ -18,9 +18,19 @@ go get github.com/duck8823/caws
 ```
 
 ## Usage
-### Get and set session credentials
+#### Start shell with environment variable for AWS credentials.
 ```bash
-caws session --profile <profile for mfa> \
-             --serial-number <arn of the mfa device> \
-             --session-profile <profile for session>
+caws mfa --profile <profile for mfa> \
+             --serial-number <arn of the mfa device>
+```
+
+This command set environment variables bellow
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN`
+
+#### Exit shell
+```bash
+exit
 ```
