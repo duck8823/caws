@@ -22,36 +22,41 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"golang.org/x/xerrors"
+	"gopkg.in/ini.v1"
+	"os"
+	"path/filepath"
 )
 
 // lsCmd represents the ls command
 var lsCmd = &cobra.Command{
 	Use:   "ls",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Show profiles",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		file, err := cmd.Flags().GetString("file")
+		if err != nil {
+			return xerrors.Errorf("Failed to parse flag '%s': %w", file, err)
+		}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ls called")
+		cfg, err := ini.Load(file)
+		if err != nil {
+			return xerrors.Errorf("Failed to load credentials file '%s': %w", file, err)
+		}
+
+		for _, s := range cfg.SectionStrings() {
+			if s == "DEFAULT" {
+				continue
+			}
+			println(s)
+		}
+
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(lsCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// lsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// lsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	lsCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
 }
