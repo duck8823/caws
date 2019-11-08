@@ -40,7 +40,12 @@ var useCmd = &cobra.Command{
 			return xerrors.Errorf("Failed to parse flag '%s': %w", prof, err)
 		}
 
-		cred, err := credentials.NewSharedCredentials(filepath.Join(os.Getenv("HOME"), ".aws/credentials"), prof).Get()
+		file, err := cmd.Flags().GetString("file")
+		if err != nil {
+			return xerrors.Errorf("Failed to parse flag '%s': %w", file, err)
+		}
+
+		cred, err := credentials.NewSharedCredentials(file, prof).Get()
 		if err != nil {
 			return xerrors.Errorf("Failed to get credentials '%s': %w", prof, err)
 		}
@@ -71,4 +76,5 @@ func init() {
 	rootCmd.AddCommand(useCmd)
 
 	useCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
+	useCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
 }
