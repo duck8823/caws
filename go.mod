@@ -7,4 +7,5 @@ require (
 	github.com/spf13/cobra v0.0.5
 	golang.org/x/net v0.0.0-20191101175033-0deb6923b6d9 // indirect
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
+	gopkg.in/ini.v1 v1.50.0 // indirect
 )
