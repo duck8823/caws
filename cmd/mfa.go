@@ -31,9 +31,9 @@ import (
 	"os/exec"
 )
 
-// sessionCmd represents the login command
-var sessionCmd = &cobra.Command{
-	Use:   "session",
+// mfaCmd represents the login command
+var mfaCmd = &cobra.Command{
+	Use:   "mfa",
 	Short: "Get and set session token with STS",
 	Long: `Get and set session token AWS with AWS Security Token Service (STS).
 
@@ -94,8 +94,8 @@ This command set credentials to credentials file.
 }
 
 func init() {
-	rootCmd.AddCommand(sessionCmd)
+	rootCmd.AddCommand(mfaCmd)
 
-	sessionCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
-	sessionCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
+	mfaCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
+	mfaCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 }
