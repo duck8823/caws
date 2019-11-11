@@ -79,7 +79,7 @@ func init() {
 	useCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	useCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
 
-	if err := mfaCmd.MarkFlagRequired("profile"); err != nil {
+	if err := useCmd.MarkFlagRequired("profile"); err != nil {
 		log.Fatalf("Failed to mark flag required: %+v\n", err)
 	}
 }
