@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -77,4 +78,8 @@ func init() {
 
 	useCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	useCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
+
+	if err := mfaCmd.MarkFlagRequired("profile"); err != nil {
+		log.Fatalf("Failed to mark flag required: %+v\n", err)
+	}
 }

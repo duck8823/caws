@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
 	"gopkg.in/ini.v1"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -131,5 +132,12 @@ func init() {
 	mfaCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
 	mfaCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	mfaCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
-	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token. default is environment variable.")
+	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token (default is environment variable)")
+
+	if err := mfaCmd.MarkFlagRequired("serial-number"); err != nil {
+		log.Fatalf("Failed to mark flag required: +%v\n", err)
+	}
+	if err := mfaCmd.MarkFlagRequired("profile"); err != nil {
+		log.Fatalf("Failed to mark flag required: %+v\n", err)
+	}
 }
