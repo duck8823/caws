@@ -27,8 +27,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
+	"gopkg.in/ini.v1"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 // mfaCmd represents the login command
@@ -71,6 +73,36 @@ This command set credentials to credentials file.
 			return xerrors.Errorf("Failed to get session token: %w", err)
 		}
 
+		o, err := cmd.Flags().GetString("output")
+		if err != nil {
+			return xerrors.Errorf("Failed to parse flag: %w", arn, err)
+		}
+		if len(o) > 0 {
+			file, err := cmd.Flags().GetString("file")
+			if err != nil {
+				return xerrors.Errorf("Failed to parse flag '%s': %w", file, err)
+			}
+
+			cfg, err := ini.Load(file)
+			if err != nil {
+				return xerrors.Errorf("Failed to load credentials file '%s': %w", file, err)
+			}
+
+			s, err := cfg.NewSection(o)
+			if err != nil {
+				return xerrors.Errorf("Failed to create a new section: %w", err)
+			}
+			s.Key("aws_access_key_id").SetValue(*result.Credentials.AccessKeyId)
+			s.Key("aws_secret_access_key").SetValue(*result.Credentials.SecretAccessKey)
+			s.Key("aws_session_token").SetValue(*result.Credentials.SessionToken)
+
+			if err := cfg.SaveTo(file); err != nil {
+				return xerrors.Errorf("Failed to save credentials file: %w", err)
+			}
+
+			return nil
+		}
+
 		shell := exec.Command(os.Getenv("SHELL"), "-l")
 
 		shell.Stdin = os.Stdin
@@ -98,4 +130,6 @@ func init() {
 
 	mfaCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
 	mfaCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
+	mfaCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
+	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token. default is environment variable.")
 }
