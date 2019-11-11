@@ -18,17 +18,40 @@ go get github.com/duck8823/caws
 ```
 
 ## Usage
-#### Start shell with environment variable for AWS credentials.
+#### Show profile names
 ```bash
-caws mfa --profile <profile for mfa> \
-             --serial-number <arn of the mfa device>
+caws ls [--file <path to credentials file>]
 ```
 
-This command set environment variables bellow
+#### Use specific profile
+```bash
+caws use --profile <profile to use>
+```
+
+Set specific credentials to environment variables bellow
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_SESSION_TOKEN`
+
+and start new shell.
+
+#### Login and set credentials with MFA
+```bash
+caws mfa --profile <profile for mfa> \
+         --serial-number <arn of the mfa device> \
+         [--output <output profile name>] \
+         [--file <file set new profile>]
+```
+
+If you set a `--output` flag, this command set new profile to credentials file.
+Without `--output`, set environment variables bellow
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN`
+
+and new shell.
 
 #### Exit shell
 ```bash
