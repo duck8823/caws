@@ -131,5 +131,5 @@ func init() {
 	mfaCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
 	mfaCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	mfaCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
-	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token. default is environment variable.")
+	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token (default is environment variable)")
 }
