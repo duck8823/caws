@@ -46,8 +46,7 @@ var useCmd = &cobra.Command{
 			return xerrors.Errorf("Failed to parse flag '%s': %w", file, err)
 		}
 
-		cred, err := credentials.NewSharedCredentials(file, prof).Get()
-		if err != nil {
+		if _, err := credentials.NewSharedCredentials(file, prof).Get(); err != nil {
 			return xerrors.Errorf("Failed to get credentials '%s': %w", prof, err)
 		}
 
@@ -57,16 +56,9 @@ var useCmd = &cobra.Command{
 		shell.Stdout = os.Stdout
 		shell.Stderr = os.Stderr
 
-		if err := os.Setenv("AWS_ACCESS_KEY_ID", cred.AccessKeyID); err != nil {
+		if err := os.Setenv("AWS_PROFILE", prof); err != nil {
 			return xerrors.Errorf("Failed to set environment variable: %w", err)
 		}
-		if err := os.Setenv("AWS_SECRET_ACCESS_KEY", cred.SecretAccessKey); err != nil {
-			return xerrors.Errorf("Failed to set environment variable: %w", err)
-		}
-		if err := os.Setenv("AWS_SESSION_TOKEN", cred.SessionToken); err != nil {
-			return xerrors.Errorf("Failed to set environment variable: %w", err)
-		}
-
 		shell.Env = os.Environ()
 
 		return shell.Run()
