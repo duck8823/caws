@@ -24,6 +24,7 @@ package cmd
 import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
@@ -56,6 +57,18 @@ This command set credentials to credentials file.
 		arn, err := cmd.Flags().GetString("serial-number")
 		if err != nil {
 			return xerrors.Errorf("Failed to parse flag: %w", arn, err)
+		}
+
+		if len(arn) == 0 {
+			devs, err := iam.New(sess).ListVirtualMFADevices(&iam.ListVirtualMFADevicesInput{})
+			if err != nil {
+				return xerrors.Errorf("Failed to list MFA devices: %w", err)
+			}
+			if len(devs.VirtualMFADevices) != 1 {
+				return xerrors.Errorf("You must have only one virtual MFA device")
+			}
+			arn = *devs.VirtualMFADevices[0].SerialNumber
+			println(arn)
 		}
 
 		code, err := stscreds.StdinTokenProvider()
@@ -129,14 +142,11 @@ This command set credentials to credentials file.
 func init() {
 	rootCmd.AddCommand(mfaCmd)
 
-	mfaCmd.Flags().StringP("serial-number", "a", "myRoleArn", "An arn of the MFA device")
+	mfaCmd.Flags().StringP("serial-number", "a", "", "An arn of the MFA device")
 	mfaCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	mfaCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
 	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token (default is environment variable)")
 
-	if err := mfaCmd.MarkFlagRequired("serial-number"); err != nil {
-		log.Fatalf("Failed to mark flag required: +%v\n", err)
-	}
 	if err := mfaCmd.MarkFlagRequired("profile"); err != nil {
 		log.Fatalf("Failed to mark flag required: %+v\n", err)
 	}
