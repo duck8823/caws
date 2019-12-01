@@ -60,15 +60,24 @@ This command set credentials to credentials file.
 		}
 
 		if len(arn) == 0 {
+			u, err := cmd.Flags().GetString("username")
+			if err != nil {
+				return xerrors.Errorf("Failed to parse flag: %w", err)
+			}
+
 			devs, err := iam.New(sess).ListVirtualMFADevices(&iam.ListVirtualMFADevicesInput{})
 			if err != nil {
 				return xerrors.Errorf("Failed to list MFA devices: %w", err)
 			}
-			if len(devs.VirtualMFADevices) != 1 {
-				return xerrors.Errorf("You must have only one virtual MFA device")
+			for _, dev := range devs.VirtualMFADevices {
+				if *dev.User.UserName == u {
+					arn = *dev.SerialNumber
+					break
+				}
 			}
-			arn = *devs.VirtualMFADevices[0].SerialNumber
-			println(arn)
+			if len(arn) == 0 {
+				return xerrors.Errorf("Failed to get serial number from user name: %s", u)
+			}
 		}
 
 		code, err := stscreds.StdinTokenProvider()
@@ -146,6 +155,7 @@ func init() {
 	mfaCmd.Flags().StringP("profile", "p", "default", "A name of profile use to get session token")
 	mfaCmd.Flags().StringP("file", "f", filepath.Join(os.Getenv("HOME"), ".aws/credentials"), "Path to shared credentials file")
 	mfaCmd.Flags().StringP("output", "o", "", "A name of profile which set session token (default is environment variable)")
+	mfaCmd.Flags().StringP("username", "u", "", "A user name using virtual mfa device")
 
 	if err := mfaCmd.MarkFlagRequired("profile"); err != nil {
 		log.Fatalf("Failed to mark flag required: %+v\n", err)
