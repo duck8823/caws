@@ -28,18 +28,15 @@ caws ls [--file <path to credentials file>]
 caws use --profile <profile to use>
 ```
 
-Set specific credentials to environment variables bellow
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_SESSION_TOKEN`
+Set specific credential to environment variable `AWS_PROFILE`
 
 and start new shell.
 
 #### Login and set credentials with MFA
 ```bash
 caws mfa --profile <profile for mfa> \
-         --serial-number <arn of the mfa device> \
+         [--username <user name using the virtual mfa device>]
+         [--serial-number <arn of the mfa device>] \
          [--output <output profile name>] \
          [--file <file set new profile>]
 ```
